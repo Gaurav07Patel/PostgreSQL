@@ -1,0 +1,44 @@
+---
+- name: Install Postgresql12
+  hosts: localhost
+  become: yes
+  tasks: 
+    - name: Installing PostgreSQl-12
+      get-url:
+        url: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+        dest: /etc
+    - yum: 
+        name: postgresql12 
+        state: installed
+    - yum: 
+        name: ostgresql12-contrib 
+        state: installed
+    - yum: 
+        name: postgresql12-server
+        state: installed
+    
+    - name: Intiializing database
+      comand: /usr/pgsql-12/bin/postgresql12-setup initdb
+
+    - systemd:
+         state: started 
+         name: postgresql-12
+    - systemd:
+         enabled: yes 
+         name: postgresql-12
+    
+    - name: Installing Git
+      yum: git
+      state: Installed
+
+    
+- name: Loading data to database
+  hosts: localhost
+  become: yes
+  tasks: 
+    - command: su -postgres
+    - command: psql 
+    - command: psql -c Create database yelp;
+    - command: psql -d yelp -c "CREATE TABLE cr (username text, date date, city text, rating numeric, review text); "
+    #Don't FORGET to move yelppp csv file under /tmp directory... 
+    - command: psql -d yep -c " /copy cr FROM '/home/vagrant/tmp/yeppp' DELIMIER ',' CSV HEADER "    
